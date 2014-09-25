@@ -1,0 +1,25 @@
+---
+- name: Install OpenVPN
+  apt: pkg=openvpn state=present
+
+- name: Configure OpenVPN networking
+# TODO. Not sure if this can be done via existing network role or needs custom work
+# https://wiki.debian.org/OpenVPN#Static-Key_VPN
+  notify: restart openvpn
+
+- name: Configure Firewall for outbound OpenVPN
+# TODO: UFW configuration for openvpn (does it ship a profile file?)
+# https://www.google.com.au/search?q=ufw+openvpn&ie=utf-8&oe=utf-8&aq=t&rls=org.mozilla:en-US:official&client=firefox-a&channel=fflb&gfe_rd=cr&ei=aawGVOTfJsyN8QewmYGYDg
+  ufw:
+	direction:outgoing
+	from_port:1193
+	proto: udp
+	rule=allow
+	to_port: FIXME
+
+- name: Enable IPv4 forwarding over VPN
+  sysctl: reload=yes state=present
+  value: 1
+  name: sys.net.ipv4.ip_forward
+
+# TODO: routing rules for the VPN. should we allow forwarding or just routing?
